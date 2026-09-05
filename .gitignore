@@ -1,2 +1,3 @@
 .env
-__pycache__/reviews.cpython-314.pyc
+__pycache__/
+*.py[cod]
