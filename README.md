@@ -1,7 +1,8 @@
+
 # OpenAI Sandbox
 
-A small learning project for experimenting with the OpenAI API.
-This is not a vibe coding project; it is a demo/sandbox project for learning LLM API integrations.
+A small learning project for experimenting with the OpenAI API.\
+**This is not a vibe coding project; it is a demo/sandbox project for learning LLM API integrations.**
 
 ## Setup
 
