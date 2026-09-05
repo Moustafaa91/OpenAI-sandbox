@@ -1,4 +1,6 @@
 from openai import OpenAI
+from pydantic import BaseModel, ValidationError
+import json
 
 from openai_config import DEFAULT_MODEL, get_openai_client
 
@@ -16,12 +18,15 @@ Return JSON in this format:
 Review: ```{review}```
 """
 
+class ReviewSummaryModel(BaseModel):
+    summary: str
+    score: int
 
 def summarize_review(
     review: str,
     client: OpenAI | None = None,
     model: str = DEFAULT_MODEL,
-) -> str:
+) -> ReviewSummaryModel:
     """Summarize one review using the OpenAI API."""
     client = client or get_openai_client()
     response = client.chat.completions.create(
@@ -29,7 +34,13 @@ def summarize_review(
         messages=[{"role": "user", "content": build_prompt(review)}],
         temperature=0,
     )
-    return response.choices[0].message.content or ""
+    review_summary = response.choices[0].message.content
+    try:
+        return ReviewSummaryModel(**json.loads(review_summary))
+    except ValidationError as e:
+        for error in e.errors():
+            print(f"Validation error: {error['msg']} at {error['loc']}")    
+        return None
 
 
 def summarize_reviews(reviews: list[str]) -> None:
