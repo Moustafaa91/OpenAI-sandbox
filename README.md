@@ -9,7 +9,7 @@ A small project for learning common OpenAI API patterns with Python.\
 Run these commands from the project folder:
 
 ```powershell
-python -m pip install openai pydantic-ai python-dotenv "pydantic[email]"
+python -m pip install openai llama-index llama-index-llms-openai llama-index-embeddings-huggingface pydantic-ai python-dotenv "pydantic[email]"
 ```
 
 Create a file named `.env` in the project folder and add your OpenAI API key:
