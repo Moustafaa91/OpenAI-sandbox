@@ -6,6 +6,7 @@ from openai import OpenAI
 
 
 DEFAULT_MODEL = "gpt-5.4-mini"
+EMBEDDING_MODEL = "text-embedding-3-small"
 
 load_dotenv()
 
