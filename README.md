@@ -62,12 +62,20 @@ To run an embedding example, edit the `__main__` block in
 
 ```python
 if __name__ == "__main__":
-word_embeddings()
+	word_embeddings()
 ```
 
 Use `word_embeddings()` to print embedding vector lengths and sample values,
 cosine similarities between sentences, averaged word-vector shapes, and
 sentence similarity. Use `visualize_embeddings()` to create the visualization.
+To run the Stack Overflow clustering example, replace the call in the
+`__main__` block with:
+
+```python
+if __name__ == "__main__":
+	example_usage_stackoverflow()
+```
+
 Then run:
 
 ```powershell
