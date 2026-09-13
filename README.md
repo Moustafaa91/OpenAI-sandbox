@@ -87,5 +87,7 @@ unsupervised: it receives only the question embeddings, while the dataset
 categories are shown afterward to inspect how well the clusters correspond to
 the programming-language categories.
 
+[TODO: Data set to be added later]
+
 These examples demonstrate OpenAI embeddings, cosine similarity, NumPy array
 operations, PCA dimensionality reduction, and Matplotlib visualization.
