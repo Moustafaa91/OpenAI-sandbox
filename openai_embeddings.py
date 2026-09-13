@@ -1,20 +1,13 @@
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 from openai_config import EMBEDDING_MODEL, get_openai_client
+from utils import get_embeddings, plot_2D, plot_heatmap
 
 
-def get_embeddings(texts: list[str]) -> list[list[float]]:
-    """Return one embedding vector for each input string."""
-    client = get_openai_client()
-    response = client.embeddings.create(
-        model=EMBEDDING_MODEL,
-        input=texts,
-    )
-    return [item.embedding for item in response.data]
-
-
-def main() -> None:
+def word_embeddings():
     embedding = get_embeddings(["life"])[0]
     print("Word embedding")
     print(f"Length = {len(embedding)}")
@@ -73,5 +66,38 @@ def main() -> None:
     print(f"Cosine similarity = {similarity:.4f}")
 
 
+def visualize_embeddings():
+    in_1 = "Missing flamingo discovered at swimming pool"
+    in_2 = "Sea otter spotted on surfboard by beach"
+    in_3 = "Baby panda enjoys boat ride"
+    in_4 = "Breakfast themed food truck beloved by all!"
+    in_5 = "New curry restaurant aims to please!"
+    in_6 = "Python developers are wonderful people"
+    in_7 = "TypeScript, C++ or Java? All are great!" 
+    input_text_lst_news = [in_1, in_2, in_3, in_4, in_5, in_6, in_7]
+    y_labels = input_text_lst_news
+    
+    embeddings = []
+    for input_text in input_text_lst_news:
+        emb = get_embeddings([input_text])[0]
+        embeddings.append(emb)
+    
+    embeddings_array = np.array(embeddings) 
+    
+    print("Shape: " + str(embeddings_array.shape))
+    print(embeddings_array)
+    
+    # Perform PCA for 2D visualization
+    PCA_model = PCA(n_components = 2)
+    PCA_model.fit(embeddings_array)
+    new_values = PCA_model.transform(embeddings_array)
+    print("Shape: " + str(new_values.shape))
+    print(new_values)
+    plot_2D(new_values[:,0], new_values[:,1], input_text_lst_news)
+    
+
+    # Plot the heatmap
+    plot_heatmap(embeddings_array, y_labels = y_labels, title = "Embeddings Heatmap")
+
 if __name__ == "__main__":
-    main()
+    visualize_embeddings()

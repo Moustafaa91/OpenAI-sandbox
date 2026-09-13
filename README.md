@@ -1,72 +1,82 @@
-
 # OpenAI Sandbox
 
-A small project for learning common OpenAI API patterns with Python.\
+Small Python examples for OpenAI API calls, structured output, validation,
+retries, tool calling, and text embeddings.
 **This is not a vibe coding project; it is a demo/sandbox project for learning LLM API integrations.**
 
 ## Setup
 
-Run these commands from the project folder:
+Run from the project folder in PowerShell:
 
 ```powershell
-python -m pip install openai pydantic-ai python-dotenv "pydantic[email]"
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install openai python-dotenv "pydantic[email]" pydantic-ai numpy scikit-learn matplotlib mplcursors
 ```
 
-Create a file named `.env` in the project folder and add your OpenAI API key:
+Create `.env` in the project folder:
 
 ```text
 OPENAI_API_KEY=your-api-key
 ```
 
-## Examples
+All examples call the OpenAI API, so they require a valid API key and may incur
+API usage charges.
 
-Choose one of the four examples:
-
-### Single LLM call
+## LLM examples: `main.py`
 
 ```powershell
 python main.py single
 ```
 
-Sends one prompt to the LLM and prints its response.
-
-### LLM call with retries
+Prints one free-form response to the sample prompt.
 
 ```powershell
 python main.py retry --retries 5
 ```
 
-Asks the LLM for structured JSON, validates the response with Pydantic, and
-tries again when the response is invalid. The `--retries` option controls how
-many correction attempts are allowed.
-
-### Customer support agent
-
-```powershell
-python main.py agent
-```
-
-Analyzes a customer query and decides whether to look up an FAQ, check an
-order, escalate the request, or take no action. It then creates a structured
-support ticket.
-
-### Review summaries
+Prints validated JSON for a `CustomerQuery`. Invalid responses are sent back to
+the model for correction until validation succeeds or the retry limit is reached.
 
 ```powershell
 python main.py reviews
 ```
 
-Summarizes the sample product reviews and gives each one a score from 1 to 10.
+Prints one `ReviewSummaryModel` per sample review, containing a short summary
+and a score from 1 to 10.
 
-## Why Pydantic is used
+```powershell
+python main.py agent
+```
 
-The LLM is asked to return structured JSON, but its response still needs to be
-checked. Pydantic verifies that the response has the expected fields and data
-types before the program uses it.
+Prints a validated `SupportTicket` JSON object. The agent may call the local FAQ
+or order-status tools before creating the ticket.
 
-## How retries work
+These examples demonstrate chat completions, Pydantic model validation,
+structured output, retry prompts, tool calling, and `pydantic-ai` agents.
 
-When Pydantic finds an invalid response, the program sends the original prompt,
-the response, and the validation error back to the LLM. The LLM is asked to
-correct the response, and Pydantic checks it again. This continues until the
-response is valid or the retry limit is reached.
+## Embedding examples: `openai_embeddings.py`
+
+To run an embedding example, edit the `__main__` block in
+`openai_embeddings.py` and replace the function call:
+
+```python
+if __name__ == "__main__":
+	word_embeddings()
+```
+
+Use `word_embeddings()` to print embedding vector lengths and sample values,
+cosine similarities between sentences, averaged word-vector shapes, and
+sentence similarity. Use `visualize_embeddings()` to create the visualization.
+Then run:
+
+```powershell
+python openai_embeddings.py
+```
+
+With `visualize_embeddings()`, the script prints the embedding and PCA array
+shapes, then opens a 2D PCA scatter plot and an embeddings heatmap. Hover over
+scatter points to see their labels.
+
+These examples demonstrate OpenAI embeddings, cosine similarity, NumPy array
+operations, PCA dimensionality reduction, and Matplotlib visualization.
