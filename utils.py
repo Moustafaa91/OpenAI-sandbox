@@ -2,6 +2,11 @@ from typing import Type
 import mplcursors
 import matplotlib.pyplot as plt
 import numpy as np
+import time
+from tqdm.auto import tqdm
+import math
+from concurrent.futures import ThreadPoolExecutor
+import functools
 
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
@@ -152,3 +157,75 @@ def plot_2D(x_values, y_values, labels):
         sel.annotation.set_fontsize(12) 
 
     plt.show()
+    
+def clusters_2D(x_values, y_values, labels, kmeans_labels, displayed_column = None):
+    fig, ax = plt.subplots()
+    scatter = ax.scatter(x_values, 
+                         y_values, 
+                         c = kmeans_labels, 
+                         cmap='Set1', 
+                         alpha=0.5, 
+                         edgecolors='k', 
+                         s = 40)  # Change the denominator as per n_clusters
+
+    # Create a mplcursors object to manage the data point interaction
+    cursor = mplcursors.cursor(scatter, hover=True)
+
+    #axes
+    ax.set_title('Embedding clusters visualization in 2D')  # Add a title
+    ax.set_xlabel('X_1')  # Add x-axis label
+    ax.set_ylabel('X_2')  # Add y-axis label
+
+    # Define how each annotation should look
+    @cursor.connect("add")
+    def on_add(sel):
+        if displayed_column:
+            sel.annotation.set_text(labels.iloc[sel.index][displayed_column])
+        else:
+            sel.annotation.set_text(labels.iloc[sel.index])
+        sel.annotation.get_bbox_patch().set(facecolor='white', alpha=0.95) # Set annotation's background color
+        sel.annotation.set_fontsize(14) 
+
+    plt.show()
+    
+def generate_batches(sentences, batch_size = 5):
+    for i in range(0, len(sentences), batch_size):
+        yield sentences[i : i + batch_size]
+
+def encode_texts_to_embeddings(sentences):
+    try:
+        embeddings = get_embeddings(sentences)
+        return embeddings
+    except Exception:
+        return [None for _ in range(len(sentences))]
+        
+def encode_text_to_embedding_batched(sentences, api_calls_per_second = 0.33, batch_size = 5):
+    # Generates batches and calls embedding API
+    
+    embeddings_list = []
+
+    # Prepare the batches using a generator
+    batches = generate_batches(sentences, batch_size)
+
+    seconds_per_job = 1 / api_calls_per_second
+
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        for batch in tqdm(
+            batches, total = math.ceil(len(sentences) / batch_size), position=0
+        ):
+            futures.append(
+                executor.submit(functools.partial(encode_texts_to_embeddings), batch)
+            )
+            time.sleep(seconds_per_job)
+
+        for future in futures:
+            embeddings_list.extend(future.result())
+
+    is_successful = [
+        embedding is not None for sentence, embedding in zip(sentences, embeddings_list)
+    ]
+    embeddings_list_successful = np.squeeze(
+        np.stack([embedding for embedding in embeddings_list if embedding is not None])
+    )
+    return embeddings_list_successful

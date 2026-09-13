@@ -2,9 +2,14 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+import pandas as pd
+import pickle
+from pathlib import Path
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 
 from openai_config import EMBEDDING_MODEL, get_openai_client
-from utils import get_embeddings, plot_2D, plot_heatmap
+from utils import encode_text_to_embedding_batched, encode_texts_to_embeddings, generate_batches, get_embeddings, plot_2D, plot_heatmap, clusters_2D
 
 
 def word_embeddings():
@@ -98,6 +103,49 @@ def visualize_embeddings():
 
     # Plot the heatmap
     plot_heatmap(embeddings_array, y_labels = y_labels, title = "Embeddings Heatmap")
+    
+def example_usage_stackoverflow():
+    """Visualize embeddings for a set of StackOverflow questions."""
+    stackoverflow_df = pd.read_csv('so_database_app.csv')
+    
+    so_questions = stackoverflow_df.input_text.tolist() 
+    #batches = generate_batches(sentences = so_questions)
+    #batch = next(batches)
+    #batch_embeddings = encode_texts_to_embeddings(batch)
+    #print(f"{len(batch_embeddings)} embeddings of size {len(batch_embeddings[0])}")
+    
+    # To save time, we can load the embeddings from a file if they exist,
+    # otherwise compute and save them for later use.
+    embeddings_path = Path('question_embeddings_app.pkl')
+    if embeddings_path.exists() and embeddings_path.stat().st_size > 0:
+        with embeddings_path.open('rb') as embeddings_file:
+            question_embeddings = pickle.load(embeddings_file)
+        print(f"Loaded embeddings from {embeddings_path}")
+    else:
+        question_embeddings = encode_text_to_embedding_batched(
+                                sentences=so_questions,
+                                api_calls_per_second = 20/60, 
+                                batch_size = 5)
+        with embeddings_path.open('wb') as embeddings_file:
+            pickle.dump(question_embeddings, embeddings_file)
+        print(f"Saved embeddings to {embeddings_path}")
+    
+    
+    
+    clustering_dataset = question_embeddings
+    n_clusters = 4 # This dataset contains questions related to 4 programming languages: ["python", "html", "r", "css"]
+    kmeans = KMeans(n_clusters=n_clusters, random_state=0, 
+                    n_init = 'auto').fit(clustering_dataset)
+    kmeans_labels = kmeans.labels_
+    PCA_model = PCA(n_components=2)
+    PCA_model.fit(clustering_dataset)
+    new_values = PCA_model.transform(clustering_dataset)
+    #Clustering is able to identify distinct clusters of categories related questions, 
+    # without being given the category labels ["python", "html", "r", "css"].
+    clusters_2D(x_values = new_values[:,0], y_values = new_values[:,1], 
+            labels = stackoverflow_df, kmeans_labels = kmeans_labels, displayed_column = "category")
+    
+    
 
 if __name__ == "__main__":
-    visualize_embeddings()
+    example_usage_stackoverflow()

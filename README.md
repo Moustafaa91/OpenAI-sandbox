@@ -62,7 +62,7 @@ To run an embedding example, edit the `__main__` block in
 
 ```python
 if __name__ == "__main__":
-	word_embeddings()
+word_embeddings()
 ```
 
 Use `word_embeddings()` to print embedding vector lengths and sample values,
@@ -77,6 +77,15 @@ python openai_embeddings.py
 With `visualize_embeddings()`, the script prints the embedding and PCA array
 shapes, then opens a 2D PCA scatter plot and an embeddings heatmap. Hover over
 scatter points to see their labels.
+
+The Stack Overflow example processes roughly 2,000 questions from
+`so_database_app.csv`. It sends the question text to the OpenAI text embedding
+model, groups the resulting embedding vectors with KMeans, and uses PCA to
+project them into two dimensions for visualization. Questions from the same
+dataset category tend to appear together in the 2D cluster plot. KMeans is
+unsupervised: it receives only the question embeddings, while the dataset
+categories are shown afterward to inspect how well the clusters correspond to
+the programming-language categories.
 
 These examples demonstrate OpenAI embeddings, cosine similarity, NumPy array
 operations, PCA dimensionality reduction, and Matplotlib visualization.
